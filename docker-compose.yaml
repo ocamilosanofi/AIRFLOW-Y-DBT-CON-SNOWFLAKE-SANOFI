@@ -1,0 +1,51 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      AIRFLOW__WEBSERVER__WEB_SERVER_PORT: 8090
+      DBT_PROFILES_DIR: /opt/airflow/mi_proyecto_dbt
+      AIRFLOW__WEBSERVER__AUTHENTICATE: False
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'mi_clave_super_secreta'
+      AIRFLOW__LOGGING__SERVE_LOGS: 'True'
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./mi_proyecto_dbt:/opt/airflow/mi_proyecto_dbt  # Monta el proyecto de dbt
+    ports:
+      - "8090:8090"
+    command: webserver
+
+  airflow-scheduler:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__FERNET_KEY: ''
+      DBT_PROFILES_DIR: /opt/airflow/mi_proyecto_dbt
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'mi_clave_super_secreta'
+      AIRFLOW__LOGGING__SERVE_LOGS: 'True'
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./mi_proyecto_dbt:/opt/airflow/mi_proyecto_dbt  # Monta el proyecto de dbt
+      - ~/.aws:/home/airflow/.aws
+    command: scheduler
+
+volumes:
+  postgres_data:

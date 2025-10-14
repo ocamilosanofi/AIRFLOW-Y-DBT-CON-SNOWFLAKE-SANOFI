@@ -1,0 +1,20 @@
+chc_ecommerce_analytics:
+  target: dev_live
+  outputs:
+    dev_live:
+      type: snowflake
+      account: "SANOFI-EMEA_DF_CHC"
+      database: "DF_CHC_ECOMMERCE_DEV"
+      role: "DF_CHC_ECOMMERCE_DEV_TRANSFORM_PROC"
+      schema: PUBLIC
+      threads: 32
+      user: "DF_CHC_ECOMMERCE_DEV_TRANSFORM"
+
+      # Usar variable de entorno para la clave privada
+      private_key: "{{ env_var('SNOWFLAKE_PRIVATE_KEY') }}"
+
+      # Frase de la clave (si aplica)
+      private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE') }}"
+
+      warehouse: "DF_CHC_ECOMMERCE_DEV_WH_TRANSFORM"
+      query_tag: "mwaa_dev_live_run"
